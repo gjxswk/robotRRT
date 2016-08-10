@@ -19,6 +19,9 @@ steps, obstacle, robot)
 % H为目标函数
 % success为标志变量：若success=1，表示规划成功；若success=0,表示规划不成功。
 
+% global variables
+global COMPILE
+
 % 载入机械臂参数
 n = robot.n;
 m = robot.m;
@@ -48,7 +51,7 @@ v_min = 0.05;
 Euler_v = Euler_v / norm(Euler_v, 2);
 
 i = 1;
-dq(:, 1) = zeros(1, n);
+dq(:, 1) = zeros(n, 1);
 q_path(:, i) = q0;
 while i <= steps
     % get jacobi matrix and relative useful matrix
@@ -75,18 +78,25 @@ while i <= steps
         % column transformation in l-u deformation
         [~, u, ~] = lu(A'); 
         % get B from B's transposition, that A = [B 0]*Q
-        B = u'; 
+        B = u';
+        B = B(:, 1);
         % compute ds and velocity
         main_matrix = [Y'*Y, Y'*B; B'*Y, B'*B];
         ds_vel = -1/2*( main_matrix\[Y'*dH; B'*dH] );
         ds = ds_vel(1, 1);
-        vel = ds_vel(2:n-m+1, 1);
+        vel = ds_vel(2, 1);
         % to see if ds is big enough
         if ds < v_min
             vel = vel*v_min/ds;
             ds = v_min;
         end
         % compute dq
+        if COMPILE 
+            toolkit('matrix', Y, 'Y is: ');
+            toolkit('matrix', B, 'B is: ');
+            toolkit('matrix', ds, 'ds is: ');
+            toolkit('matrix', vel, 'vel is: ');
+        end
         dq(:, i+1) = Y*ds + B*vel;
         % to see if accelerate is suitable, if not, suitify it
         t = delta_L / ds;
@@ -131,5 +141,5 @@ for j = 1:T
     H(1,j) = sum(sq);
 end
 H = H / double(n);
-
+success = 1;
 end
