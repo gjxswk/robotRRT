@@ -44,6 +44,8 @@ if nargin == 2
     d = robotOrDis.d;
     a = robotOrDis.a;
     alpha = robotOrDis.alpha;
+else
+    d = robotOrDis;
 end
 
 % to enhance the use of this function, read n itself, not always .mat file
@@ -58,8 +60,8 @@ P_each = zeros(3, n);
 
 for i = 1:n
     pose_each(:, :, i) = forward_kinematic(q(i), d(i), a(i), alpha(i), 1);
-    R_each(:, :, i) = pose_each(1:3, 1:3);
-    P_each(:, i) = pose_each(1:3, 4);
+    R_each(:, :, i) = pose_each(1:3, 1:3, i);
+    P_each(:, i) = pose_each(1:3, 4, i);
 end
 
 % to compute the accumulate pose matric, R for Euler angle and  
@@ -72,10 +74,10 @@ w_accu = zeros(3, n+1);
 % compute angle velocity
 for i = 2:n+1
     R_accu(:, :, i) = R_accu(:, :, i-1)*R_each(:, :, i-1); 
-    P_accu(:, i) = P_accu(:, i-1) + R_accu(:, i-1) * P_each(:, i-1);
+    P_accu(:, i) = P_accu(:, i-1) + R_accu(:, :, i-1) * P_each(:, i-1);
 end
 % the 1:n columns of w_accu matrix is the Jacobi angle velocity, also the 
-% third column of R_accu matrix, that is the result R_accu x (0, 0, 1), 
+% third column of R_accu matrix, that is the result [R_accu x (0, 0, 1)], 
 % meaning the z-axis's expression in the base station.
 w_accu(:, :) = R_accu(:, 3, :);
 J(4:6, :) = w_accu(:, 1:n);

@@ -84,10 +84,7 @@ else
             disp('P0 is in collision with obstacle.');
         elseif ~boundaryFree(X_free, X_max, X_min)
             disp('P0 is in collision with boundary');
-        elseif ~obstacleFree(X_goal, obstacle)
-            disp('X_goal is in collision with obstacle.');
-        elseif ~boundaryFree(X_goal, X_max, X_min)
-            disp('X_goal is in collision with boundary');
+        elseif
         end
         disp('goal or initial point is in collision with obstacle.');
     end

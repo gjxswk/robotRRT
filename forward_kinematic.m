@@ -1,4 +1,5 @@
-function [ end_pose ] = forward_kinematic( theta, d, alpha, a, n_Joints )
+function [ end_pose ] = forward_kinematic(theta, robotOrDis, a, alpha,...
+    n_Joints)
 % this function used to do forward kinematic for robot.
 % input variables:
 % n_Joints: the joints number, also the length of a, alpha, d & theta
@@ -15,9 +16,18 @@ function [ end_pose ] = forward_kinematic( theta, d, alpha, a, n_Joints )
 % 3. 为使x_n和x_n+1轴共原点，将x_n轴沿自身平移a_n
 % 4. 为使z_n和z_n+1轴重合，绕x_n轴旋转alpha_a
 % 5. 依关节数量累乘得齐次变换正解矩阵
-
-if nargin < 5  % 缺省变量（关节数）
+if nargin < 4 % 表示从结构读入变量数据
+    d = robotOrDis.d;
+    a = robotOrDis.a;
+    alpha = robotOrDis.alpha;
+    n_Joints = robotOrDis.n;
+elseif nargin < 5  % 缺省变量（关节数）
+    d = robotOrDis.d;
+    a = robotOrDis.a;
+    alpha = robotOrDis.alpha;
     n_Joints = length(theta);
+else
+    d = robotOrDis;
 end
 
 end_pose = eye(4); 

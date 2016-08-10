@@ -14,5 +14,5 @@ v_psi = euler_v(1); v_theta = euler_v(2); v_phi = euler_v(3);
 euler2abs_matrix = [0, cos(psi), sin(psi)*sin(theta); 
                     0, sin(psi), -cos(psi)*sin(theta);
                     1,        0,           cos(theta)];
-abs_v = euler2abs_matrix * [v_psi, v_theta, v_phi];
+abs_v = euler2abs_matrix * [v_psi, v_theta, v_phi]';
 end

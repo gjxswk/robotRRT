@@ -77,8 +77,8 @@ while i <= steps
         % get B from B's transposition, that A = [B 0]*Q
         B = u'; 
         % compute ds and velocity
-        main_matrix = [Y'*Y, Y'*B; B'*Y, B'*B];
-        ds_vel = -1/2*( main_matrix\[Y'*dH; B'*dH] );
+        [l, u, p] = lu([Y'*Y, Y'*B; B'*Y, B'*B]);
+        ds_vel = -1/2*inv(u)/l*p*[Y'*dH; B'*dH];
         ds = ds_vel(1, 1);
         vel = ds_vel(2:n-m+1, 1);
         % to see if ds is big enough

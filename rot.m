@@ -1,4 +1,4 @@
-function rot_matrix = rot( angle, direction)
+function rot_matrix = rot(angle, direction)
 % function: use to perform rotation matrix in homogeneous way.
 % input variables:
 % distance: the distance to transform
