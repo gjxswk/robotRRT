@@ -22,6 +22,11 @@ elseif strcmp(name, 'matrix')
         end
         res = sprintf('%s \n ', res);
     end
+elseif strcmp(name, 'dead-loop')
+    i = 1;
+    while i < 10
+        scanf('%d', i);
+    end
 end
 res = sprintf('%s \n %s', headInfo, res);
 disp(res);

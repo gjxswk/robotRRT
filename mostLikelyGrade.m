@@ -45,11 +45,11 @@ X_s = zeros(m, 1);
 factor = zeros(1, n);
 zero_norm = (1e-3)^6;
 delta_L = L / double(steps);
+success = 1;
 % band the minimum velocity
 v_min = 0.05;
 % normalize the euler velocity
 Euler_v = Euler_v / norm(Euler_v, 2);
-
 i = 1;
 dq(:, 1) = zeros(n, 1);
 q_path(:, i) = q0;
@@ -57,8 +57,7 @@ while i <= steps
     % get jacobi matrix and relative useful matrix
     [jac, pos, ra, pa, ~, ~] = Jacobi(q_path(1:n, i), robot);
     % perform euler angle velocity
-    X_path(1:3, i) = pa(:, n+1);
-    X_path(4:6, i) = inverse_euler(ra(:, :, n+1));
+    X_path(1:6, i) = matrix2pose(ra(:, :, n+1), pa(:, n+1));
     X_s(1:3) = X_path(1:3, i);
     X_s(4:6) = eulerV2absV(X_path(4:6), Euler_v);
     % to do boundary & obstacle detect
@@ -91,12 +90,14 @@ while i <= steps
             ds = v_min;
         end
         % compute dq
+        COMPILE = 0;
         if COMPILE 
             toolkit('matrix', Y, 'Y is: ');
             toolkit('matrix', B, 'B is: ');
             toolkit('matrix', ds, 'ds is: ');
             toolkit('matrix', vel, 'vel is: ');
         end
+        COMPILE = 1;
         dq(:, i+1) = Y*ds + B*vel;
         % to see if accelerate is suitable, if not, suitify it
         t = delta_L / ds;
@@ -123,7 +124,9 @@ while i <= steps
     end
     i = i + 1;
 end
-
+% compute x_path(:, i) to make rank same to q_path
+ [~, ~, ra, pa, ~, ~] = Jacobi(q_path(1:n, i), robot);
+ X_path(1:6, i) = matrix2pose(ra(:, :, n+1), pa(:, n+1));
 %求解目标函数H(x)
 T = i;
 H = zeros(1,T);
@@ -141,5 +144,4 @@ for j = 1:T
     H(1,j) = sum(sq);
 end
 H = H / double(n);
-success = 1;
 end

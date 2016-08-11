@@ -1,4 +1,4 @@
-function [el_alpha, el_beta, el_gamma] = inverse_euler( euler_matrix )
+function el_angle = inverse_euler( euler_matrix )
 % This function used to get the three Euler angle from the Euler
 % Transformation Matrix.
 % input: Euler Transformation Matrix.
@@ -30,5 +30,5 @@ else
         el_gamma = 0.0;
     end
 end
-     
+el_angle = [el_alpha; el_beta; el_gamma];
 end

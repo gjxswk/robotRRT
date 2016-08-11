@@ -3,7 +3,9 @@ function res = main()
 
 % define global variables here
 global COMPILE; % use to generate compile information
+global SHOW_DIAGRAM; % 1 to show diagram, and 0 cancel.
 COMPILE = 1;
+SHOW_DIAGRAM = 1;
 % read in the given test data
 test = load('RRT3.mat');
 q0 = test.q0;
@@ -24,7 +26,9 @@ else
         disp('Find the path successfully.');
     end
     x_axis = 1:size(t_path);
-    plot3(x_axis, t_path, q_path(:, 1), x_path(:, 1));
+    if SHOW_DIAGRAM
+        plot3(x_axis, t_path, q_path(:, 1), x_path(:, 1));
+    end
 end
 res = 1;
 end

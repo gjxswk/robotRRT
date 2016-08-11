@@ -23,7 +23,7 @@ function [q_path, X_free, parent, cost, Time, success] = extend(q_path, ...
 
 % 找出X_rand最近点X_free(i)
 [near_p, near_rank, near_dis] = nearestNeighbor(X_rand, X_free, rank-1); 
-ext_dis = 0.01*factor;
+ext_dis = factor;
 if ext_dis < near_dis
     X_new = near_p + ext_dis/near_dis*(X_rand - near_p);
 else
@@ -35,13 +35,13 @@ q_initial = q_path(:, near_rank);
 cost_min = min(ext_dis, near_dis);
 steps = double(int8(2*factor));
 % doing MLG, get the joint orbit from q_near to q_new
-[q_path,X_path,T_path,~,success] = mostLikelyGrade(q_initial, ...
+[q_out, X_out, T_out, ~, success] = mostLikelyGrade(q_initial, ...
     X_new_near, cost_min, steps, obstacle, robot);
 % if success, extend the new point to the orginal tree
 if success
-    q_path(:, rank) = q_path(:, steps + 1);
-    X_free(:, rank) = X_path(:, steps + 1);
-    Time(rank) = Time(near_rank) + T_path(steps + 1);
+    q_path(:, rank) = q_out(:, steps + 1);
+    X_free(:, rank) = X_out(:, steps + 1);
+    Time(rank) = Time(near_rank) + T_out(steps + 1);
     cost(rank) = cost(near_rank) + cost_min;
     parent(rank) = near_rank;
 end
