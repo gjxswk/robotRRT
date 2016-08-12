@@ -10,7 +10,7 @@ function [point, rank, min_dis] = nearestNeighbor(X_rand, X, size)
 % rank: the rank of point in RRT tree.
 % min_dis: the RRT distance between point and given point
 rank = 1;
-min_dis = rrtDistance(X(:,1), X_rand);
+min_dis = rrtDistance(X(:, 1), X_rand);
 point = X(:, 1);
 for i = 2:size
     dis = rrtDistance(X(:, i), X_rand);

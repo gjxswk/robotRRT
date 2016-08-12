@@ -1,6 +1,12 @@
 function res = obstacleFree(Point, obstacle)
 % This function used to detect if the current position of machine is in
 % collision with the obstacle.
+% input:
+% Point: 3 x n matrix, where n is the number of points in Point
+% obstacle: the obstacle matrix, there is different format for different
+%   types of obstacle
+% output:
+% res: the detect result, 1 for free of obstacle, and 0 the other case.
 res = 1;
 safespace = 0.1;
 numObstacle = size(obstacle, 1);

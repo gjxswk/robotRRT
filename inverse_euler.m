@@ -13,8 +13,8 @@ if m < 3 || n < 3
 else
     if euler_matrix(3, 3) ~= 1
         el_beta = acos(euler_matrix(3, 3));
-        el_alpha = acos(-euler_matrix(2, 3)/(1-sqrt(euler_matrix(3, 3))));
-        el_gamma = acos(euler_matrix(3, 2)/(1-sqrt(euler_matrix(3, 3))));
+        el_alpha = acos(-euler_matrix(2, 3)/sqrt(1-euler_matrix(3, 3)^2));
+        el_gamma = acos(euler_matrix(3, 2)/sqrt(1-euler_matrix(3, 3)^2));
         % here we suppose el_beta always be in [0, pi],
         % so when euler_matrix(1, 3) or (3, 1) is negative,
         % turn the alpha or gamma to [-pi, pi];

@@ -7,6 +7,12 @@ function res = toolkit(name, text, headInfo)
 
 % output
 % res: return result
+if nargin == 1
+    text = '';
+    headInfo = '';
+elseif nargin == 2
+    headInfo = '';
+end
 res = '';
 if strcmp(name, 'array')
     len = length(text);
@@ -22,11 +28,8 @@ elseif strcmp(name, 'matrix')
         end
         res = sprintf('%s \n ', res);
     end
-elseif strcmp(name, 'dead-loop')
-    i = 1;
-    while i < 10
-        scanf('%d', i);
-    end
+elseif strcmp(name, 'input')
+    res = input('message');
 end
 res = sprintf('%s \n %s', headInfo, res);
 disp(res);

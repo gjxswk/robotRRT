@@ -39,7 +39,7 @@ m = robot.m;
 
 % initialize
 % K规划总数
-K = 2000; 
+K = 1000; 
 q_path = zeros(n, K);
 X_free = zeros(m, K);
 parent = zeros(1, K);
@@ -87,13 +87,15 @@ else
 end
 while i <= K && num_fail <= 2*K
    % sample function, random point in free space
-   X_rand = sample(X_min, X_max); 
+%    X_rand = sample(X_min, X_max); 
+    X_rand = X_goal;
    if obstacleFree(X_rand, obstacle)
        % doing extend here, generate new tree point and added it to 
        % the original tree
         [q_path, X_free, parent, cost, Time, success] = extend(q_path, ...
             X_free, parent, cost, Time, X_rand, numTree+1, factor, ...
             obstacle, robot);
+%         COMPILE = 0;
         if COMPILE
             if success
                 toolkit('array', i, 'current rank is: ');
@@ -112,7 +114,8 @@ while i <= K && num_fail <= 2*K
             % draw the rand point, new point to the graph
             if SHOW_DIAGRAM
                 subplot(331);
-                plot3(X_free(1, :), X_free(2, :), X_free(3, :), 'r*');
+                plot3(real(X_free(1, :)), real(X_free(2, :)), ...
+                    real(X_free(3, :)), 'r*');
                 axis('equal');
                 axis([-1, 1, -1, 1, 0, 1.5]);
                 title('X_free');
@@ -124,9 +127,15 @@ while i <= K && num_fail <= 2*K
             % numTree change to i, means there are i points in the tree
             numTree = i;
             length = norm(X_goal - X_free(:, i));
-            steps = double(int32(100*length));
-            [q_p, X_p, T_p, ~, succ] = mostLikelyGrade(q_path(:, i), ...
-                X_goal-X_free(:, i), length, steps, obstacle, robot);
+            % if length is close enough, then get the answer and quit,
+            % changing succ to 1, perform MLG to get the last answer
+            succ = 0;
+            if length < 0.1
+                steps = double(int32(100*length));
+                [q_p, X_p, T_p, ~, succ] = mostLikelyGrade(q_path(:, i),...
+                    X_goal-X_free(:, i), length, steps, obstacle, robot);
+            end
+            % connect to c++ process, only one solution is enough
             connect = 0;
             if succ && goalTest(X_p(:, steps+1), X_goal)
                 connect = 1;

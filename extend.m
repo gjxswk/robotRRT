@@ -21,15 +21,16 @@ function [q_path, X_free, parent, cost, Time, success] = extend(q_path, ...
 %   all of this variables are refreshed.
 % success: 1 for extending successfully, and 0 for fail.
 
+% define global variables
+global COMPILE
+COMPILE = 1;
 % 找出X_rand最近点X_free(i)
-[near_p, near_rank, near_dis] = nearestNeighbor(X_rand, X_free, rank-1); 
-ext_dis = factor;
-if ext_dis < near_dis
-    X_new = near_p + ext_dis/near_dis*(X_rand - near_p);
-else
-    X_new = X_rand;
-end
-
+[near_p, near_rank, near_dis] = nearestNeighbor(X_rand, X_free, rank-1);
+% if near enough, then use the rand point as new point, else perform
+% linear rule.
+ext_dis = 0.01*factor;
+X_new = produceNewPoint(near_p, X_rand, ext_dis, near_dis);
+% use the new point to perform MGL
 X_new_near = X_new - near_p;
 q_initial = q_path(:, near_rank);
 cost_min = min(ext_dis, near_dis);

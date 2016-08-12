@@ -1,12 +1,12 @@
-function [q_path, X_path, Time, H, success] = mostLikelyGrade(q0, Euler_v, L, ...
-steps, obstacle, robot)
+function [q_path, X_path, Time, H, success] = mostLikelyGrade(q0, ...
+    Euler_v, L, steps, obstacle, robot)
 % 最似梯度法(most likely grade method, MLG法)进行机械臂逆运动学轨迹优化，通过
 % 迭代的方法求解关节角q及速度dq
 % 输入参数:
 % q0为初始关节变量
 % Euler_v为末端执行器欧拉角速度
 % L表示机械臂运动总路程
-% steps对给定的轨迹进行直线插补的总小段数，现设定为100
+% steps对给定的轨迹进行直线插补的总小段数
 % obstacle表示障碍物信息
 % robot为机械臂DH等相关数据
 % 输出参数:
@@ -61,9 +61,10 @@ while i <= steps
     X_s(1:3) = X_path(1:3, i);
     X_s(4:6) = eulerV2absV(X_path(4:6), Euler_v);
     % to do boundary & obstacle detect
-    if obstacleFree([X_path(1:3,i) pos(1:3, 4)], obstacle) ~= 1 ...
-            || boundaryFree(q_path(:,i), q_max, q_min) ~= 1
+    if ~(obstacleFree([X_path(1:3,i) pa(:, :)], obstacle)  ...
+            && boundaryFree(q_path(:, i), q_max, q_min))
         success = 0;
+        break;
     end
     % to see if jtj is strange
     jtj = jac * jac';
@@ -78,7 +79,7 @@ while i <= steps
         [~, u, ~] = lu(A'); 
         % get B from B's transposition, that A = [B 0]*Q
         B = u';
-        B = B(:, 1);
+        B = B(:, n-m);
         % compute ds and velocity
         main_matrix = [Y'*Y, Y'*B; B'*Y, B'*B];
         ds_vel = -1/2*( main_matrix\[Y'*dH; B'*dH] );
@@ -90,14 +91,6 @@ while i <= steps
             ds = v_min;
         end
         % compute dq
-        COMPILE = 0;
-        if COMPILE 
-            toolkit('matrix', Y, 'Y is: ');
-            toolkit('matrix', B, 'B is: ');
-            toolkit('matrix', ds, 'ds is: ');
-            toolkit('matrix', vel, 'vel is: ');
-        end
-        COMPILE = 1;
         dq(:, i+1) = Y*ds + B*vel;
         % to see if accelerate is suitable, if not, suitify it
         t = delta_L / ds;
@@ -118,30 +111,49 @@ while i <= steps
         Time(i + 1) = Time(i) + t;
         q_path(:, i+1) = q_path(:, i) + dq(:, i+1)*t;
         s(i+1) = s(i) + ds*t;
+        % compile output
+        COMPILE = 0;
+        if COMPILE 
+            toolkit('matrix', Y, 'Y is: ');
+            toolkit('matrix', B, 'B is: ');
+            toolkit('matrix', ds, 'ds is: ');
+            toolkit('matrix', vel, 'vel is: ');
+            toolkit('matrix', dq, 'dq is: ');
+            toolkit('matrix', t, 't is: ');
+            toolkit('matrix', delta_L, 'dL is: ');
+        end
+        COMPILE = 1;
     else
         success = 0;
         break;
     end
     i = i + 1;
 end
-% compute x_path(:, i) to make rank same to q_path
- [~, ~, ra, pa, ~, ~] = Jacobi(q_path(1:n, i), robot);
- X_path(1:6, i) = matrix2pose(ra(:, :, n+1), pa(:, n+1));
-%求解目标函数H(x)
 T = i;
 H = zeros(1,T);
-sq = zeros(n,1);
-q_norm = pi;
-for j = 1:T
-    for i = 1:n
-        if q_max(i,1) - q_path(i,j) < q_norm || q_path(i,j) - q_min(i,1) < q_norm
-            sq(i,1) = 1/4*(q_max(i,1)-q_min(i,1))^2/((q_max(i,1)-q_path(i,j))...
-                *(q_path(i,j)-q_min(i,1)));
-        else
-            sq(i,1)=0;
-        end
+if success
+     % compute x_path(:, i) to make rank same to q_path
+     [~, ~, ra, pa, ~, ~] = Jacobi(q_path(:, i), robot);
+     X_path(:, i) = matrix2pose(ra(:, :, n+1), pa(:, n+1));
+     if ~(obstacleFree([X_path(1:3,i) pa(1:3, 4, :)], obstacle)  ...
+            && boundaryFree(q_path(:, i), q_max, q_min))
+        success = 0;
+        return
     end
-    H(1,j) = sum(sq);
+    %求解目标函数H(x)
+    sq = zeros(n,1);
+    q_norm = pi;
+    for j = 1:T
+        for i = 1:n
+            if q_max(i,1) - q_path(i,j) < q_norm || q_path(i,j) - q_min(i,1) < q_norm
+                sq(i,1) = 1/4*(q_max(i,1)-q_min(i,1))^2/((q_max(i,1)-q_path(i,j))...
+                    *(q_path(i,j)-q_min(i,1)));
+            else
+                sq(i,1)=0;
+            end
+        end
+        H(1,j) = sum(sq);
+    end
+    H = H / double(n);
 end
-H = H / double(n);
 end

@@ -25,9 +25,8 @@ else
     if COMPILE
         disp('Find the path successfully.');
     end
-    x_axis = 1:size(t_path);
     if SHOW_DIAGRAM
-        plot3(x_axis, t_path, q_path(:, 1), x_path(:, 1));
+        plot3(t_path, q_path(1, :), x_path(1, :));
     end
 end
 res = 1;
