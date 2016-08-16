@@ -55,7 +55,7 @@ dq(:, 1) = zeros(n, 1);
 q_path(:, i) = q0;
 while i <= steps
     % get jacobi matrix and relative useful matrix
-    [jac, pos, ra, pa, ~, ~] = Jacobi(q_path(1:n, i), robot);
+    [jac, ~, ra, pa, ~, ~] = Jacobi(q_path(1:n, i), robot);
     % perform euler angle velocity
     X_path(1:6, i) = matrix2pose(ra(:, :, n+1), pa(:, n+1));
     X_s(1:3) = X_path(1:3, i);
@@ -71,7 +71,7 @@ while i <= steps
     det_jtj = det(jtj);
     if zero_norm < abs(det_jtj)
         % pinv means expand inverse of jac, that is , j_pinv = jac'/jtj
-        j_pinv = pinv(jac);
+        j_pinv = jac'/jtj;
         Y = j_pinv * X_s;
         A = eye(n) - j_pinv * jac;
         dH = gradMLG(q_path(:, i), q_max, q_min, n);

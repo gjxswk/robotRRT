@@ -7,7 +7,6 @@ function [position, euler_angle] = matrix2pose( homo_matrix, ...
 % the first one is 4x4 Euler homogeneous matrix.
 % output: (x, y, z) is the position, (alpha, beta, gamma) is for the 
 % three Euler angle.
-
 if nargin < 2
     position(1:3) = homo_matrix(1:3, 4);
     euler_angle(1:3) = inverse_euler(homo_matrix);
@@ -20,4 +19,5 @@ end
 if nargout < 2
     position(4:6) = euler_angle(1:3);
 end
+position = position';
 end

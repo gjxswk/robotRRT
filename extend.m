@@ -26,10 +26,18 @@ global COMPILE
 COMPILE = 1;
 % 找出X_rand最近点X_free(i)
 [near_p, near_rank, near_dis] = nearestNeighbor(X_rand, X_free, rank-1);
+if COMPILE
+    toolkit('array', near_p, 'near point is: ');
+    toolkit('array', near_rank, 'near rank is: ');
+    toolkit('array', near_dis, 'near distance is: ');
+end
 % if near enough, then use the rand point as new point, else perform
 % linear rule.
 ext_dis = 0.01*factor;
 X_new = produceNewPoint(near_p, X_rand, ext_dis, near_dis);
+if COMPILE
+    toolkit('array', X_new, 'new point is: ');
+end
 % use the new point to perform MGL
 X_new_near = X_new - near_p;
 q_initial = q_path(:, near_rank);
