@@ -92,7 +92,7 @@ while i <= K && num_fail <= 2*K
    if obstacleFree(X_rand, obstacle)
        % doing extend here, generate new tree point and added it to 
        % the original tree
-        [q_path, X_free, parent, cost, Time, success] = extend(q_path, ...
+        [q_path, X_free, parent, cost, Time, success] = extendNP(q_path, ...
             X_free, parent, cost, Time, X_rand, numTree+1, factor, ...
             obstacle, robot);
 %         COMPILE = 0;
@@ -165,7 +165,7 @@ if 1 < rank_end
     if connect
         optimal_q = [optimal_q q_p];
         optimal_Xfree = [optimal_Xfree X_p];
-        optimal_T = [optimal_T; T(k)+T_p];
+%         optimal_T = [optimal_T; T_p];
     end
     % smooth the path
     [output_q, output_Xfree, output_T] = smooth(optimal_q, ...

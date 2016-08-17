@@ -36,9 +36,14 @@ if abs(det_jtj) < sin_error
     return
 end
 j_pinv = jac'/jtj; % if not singular, then continue to compute the pinv
-x_in = matrix2pose(r_in(:, :, n+1), p_in(:, n+1));
+R_in = r_in(:, :, n+1); % the current euler transformation matrix(ETM)
+R_dest = euler_trans(x_dest(4), x_dest(5), x_dest(6));
+R_dest = R_dest(1:3, 1:3);% destination ETM
+x_in = matrix2pose(R_in, p_in(:, n+1));
 delta_x = rrtDistance(x_in, x_dest);
-dx = x_dest - x_in;
+dx = zeros(m, 1);
+dx(1:3) = x_dest(1:3) - x_in(1:3);
+dx(4:6) = rotate_fix_axis(R_in, R_dest);
 % begin iteration
 i = 1;
 i_max = 1000; % the maximum iteration times
@@ -46,14 +51,7 @@ q_iter = zeros(n, i_max);
 q_iter(:, 1) = q_in(:);
 x_iter = zeros(m, i_max);
 x_iter(:, 1) = x_in(:);
-while error < delta_x && i < i_max
-    toolkit('matrix', j_pinv, 'j_pinv is: ');
-    toolkit('matrix', jac, 'jac is: ');
-    toolkit('matrix', q_iter(:, i), 'qi is: ');
-    toolkit('matrix', dx, 'dx is: ');
-    toolkit('matrix', delta_x, 'delta_x is: ');
-    toolkit('matrix', x_iter(:, i), 'xi is: ');
-    toolkit('input');
+while error < abs(delta_x) && i < i_max
     q_iter(:, i+1) = q_iter(:, i) + j_pinv*dx; % newton-raphson
     % compute j_pinv
     [jac, ~, r_in, p_in] = Jacobi(q_iter(:, i+1), robot);
@@ -65,14 +63,16 @@ while error < delta_x && i < i_max
         return;
     end
     j_pinv = jac'/jtj;
-    x_iter(:, i+1) = matrix2pose(r_in(:, :, n+1), p_in(:, n+1)); % x(i+1)
-    delta_x = rrtDistance(x_iter(:, i), x_iter(:, i+1)); % correct delta_x
-    dx = x_dest - x_iter(:, i+1);
+    R_in = r_in(:, :, n+1);
+    x_iter(:, i+1) = matrix2pose(R_in, p_in(:, n+1)); % x(i+1)
+    delta_x = rrtDistance(x_iter(:, i+1), x_dest); % correct delta_x
+    dx(1:3) = x_dest(1:3) - x_iter(1:3, i+1);
+    dx(4:6) = rotate_fix_axis(R_in, R_dest);
     i = i + 1;
 end
-if delta_x < error
+if abs(delta_x) < error
     q_out = q_iter(:, i);
-    x_out = q_iter(:, i);
+    x_out = x_iter(:, i);
     q_iter = q_iter(:, 1:i);
     x_iter = x_iter(:, 1:i);
     error_out = delta_x;
