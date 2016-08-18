@@ -13,8 +13,8 @@ q_out = zeros(n, steps);
 x_out = zeros(m, steps);
 t_out = zeros(steps, 1);
 
-q_out(:,1) = q_input(:,1);
-x_out(:,1) = x_input(:,1);
+q_out(:, 1) = q_input(:, 1);
+x_out(:, 1) = x_input(:, 1);
 t_out(1) = t_input(1);
 
 delta_T = 1;

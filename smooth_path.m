@@ -20,10 +20,6 @@ for i = 2:num
     t(i) = double(i) / double(num);
 end
 t_iter = t*time;
-toolkit('matrix', steps, 'steps is: ');
-toolkit('matrix', q_dest, 'q_dest is: ');
-toolkit('matrix', q_in, 'q_in is: ');
-toolkit('matrix', t.^5, 't^5 is: ');
 a_5 = 6*(q_dest - q_in)*(t.^5);
 a_4 = -15*(q_dest - q_in)*(t.^4);
 a_3 = 10*(q_dest - q_in)*(t.^3);

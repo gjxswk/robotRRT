@@ -9,7 +9,7 @@ function res = goalTest(X_current, X_goal, eplsion)
 % output:
 % res: 0 for not goal, and 1 the inverse.
 if nargin < 3
-    eplsion = 0.1;
+    eplsion = 0.01;
 end
 res = 0;
 if rrtDistance(X_current, X_goal) < eplsion

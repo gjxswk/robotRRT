@@ -1,5 +1,5 @@
-function [q_out, x_out, error_out, success, q_iter, x_iter] = ...
-    newton_raphson(q_in, x_dest, robot, error)
+function [q_out, x_out, error_out, success, q_iter, x_iter, error_iter] ...
+    = newton_raphson(q_in, x_dest, robot, error)
 % perform the inverse kinematic algorithm, to get the road points in 
 % joint space to destination point.
 
@@ -21,6 +21,7 @@ m = robot.m;
 success = 1;
 q_out = zeros(n, 1);
 x_out = zeros(m, 1);
+error_out = 1e10;
 % error can be leave out and use the appointed value
 if nargin < 4
     error = 1e-6;
@@ -46,11 +47,13 @@ dx(1:3) = x_dest(1:3) - x_in(1:3);
 dx(4:6) = rotate_fix_axis(R_in, R_dest);
 % begin iteration
 i = 1;
-i_max = 1000; % the maximum iteration times
+i_max = 10; % the maximum iteration times
 q_iter = zeros(n, i_max);
 q_iter(:, 1) = q_in(:);
 x_iter = zeros(m, i_max);
 x_iter(:, 1) = x_in(:);
+error_iter = zeros(1, i_max);
+error_iter(:, 1) = abs(delta_x);
 while error < abs(delta_x) && i < i_max
     q_iter(:, i+1) = q_iter(:, i) + j_pinv*dx; % newton-raphson
     % compute j_pinv
@@ -66,8 +69,9 @@ while error < abs(delta_x) && i < i_max
     R_in = r_in(:, :, n+1);
     x_iter(:, i+1) = matrix2pose(R_in, p_in(:, n+1)); % x(i+1)
     delta_x = rrtDistance(x_iter(:, i+1), x_dest); % correct delta_x
-    dx(1:3) = x_dest(1:3) - x_iter(1:3, i+1);
-    dx(4:6) = rotate_fix_axis(R_in, R_dest);
+    error_iter(:, i+1) = delta_x; % compute error in each iteration
+    dx(1:3) = x_dest(1:3) - x_iter(1:3, i+1); % dx, dy, dz
+    dx(4:6) = rotate_fix_axis(R_in, R_dest); % fix-axis rotation
     i = i + 1;
 end
 if abs(delta_x) < error
@@ -75,9 +79,16 @@ if abs(delta_x) < error
     x_out = x_iter(:, i);
     q_iter = q_iter(:, 1:i);
     x_iter = x_iter(:, 1:i);
+    error_iter = error_iter(:, 1:i);
     error_out = delta_x;
 else
-    disp('Not success. The iteration times is out of the biggest range.');
+    % find the best answer as result
+    for k = 1:i
+        [min_err, rank] = min(error_iter(:));
+        error_out = min_err;
+        q_out = q_iter(:, rank);
+        x_out = x_iter(:, rank);
+    end
     success = 0;
 end
 end

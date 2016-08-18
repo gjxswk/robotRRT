@@ -1,6 +1,6 @@
-function [output_q, output_Xfree, output_T, success] = RRT(q0, X_max, ...
-    X_min, rE_goal, RE_goal, obstacle)
-% 基于工作自由空间的RRT法进行机械臂轨迹规划
+function [output_q, output_Xfree, output_T, success] = RRT_NP(q0, ...
+    X_max, X_min, rE_goal, RE_goal, obstacle)
+% 基于工作自由空间的RRT法进行机械臂轨迹规划，逆解使用newton-raphson算法
 % 输入变量：
 % q0:机械臂初始关节角
 % key:表示末端变量的限制情况，若key(i)=0,表示末端第i个变量固定不动；若key(i)=1,
@@ -39,7 +39,7 @@ m = robot.m;
 
 % initialize
 % K规划总数
-K = 2000; 
+K = 1000; 
 q_path = zeros(n, K);
 X_free = zeros(m, K);
 parent = zeros(1, K);
@@ -85,7 +85,7 @@ if obstacleFree(P0, obstacle) && boundaryFree(X_free, X_max, X_min)...
 else
     i = K+1;
 end
-while i <= K && num_fail <= 2*K
+while i <= K && num_fail <= 3*K
    % sample function, random point in free space
    X_rand = sample(X_min, X_max); 
 %     X_rand = X_goal;
@@ -108,7 +108,7 @@ while i <= K && num_fail <= 2*K
                 toolkit('array', q_path(:, i), 'the new point is: ');
                 toolkit('array', X_free(:, i), 'the new pointx is: ');
                 toolkit('array', X_rand(:), 'the rand point is: ');
-                sss = input('message');
+                toolkit('input');
             else
                 disp('extend not success');
             end
@@ -130,18 +130,23 @@ while i <= K && num_fail <= 2*K
             end
             % numTree change to i, means there are i points in the tree
             numTree = i;
-            length = norm(X_goal - X_free(:, i));
+            length = rrtDistance(X_goal, X_free(:, i));
+            if COMPILE
+                toolkit('matrix', length, 'current distance is: ');
+            end
             % if length is close enough, then get the answer and quit,
             % changing succ to 1, perform MLG to get the last answer
             succ = 0;
-            if length < 0.1
-                steps = double(int32(100*length));
-                [q_p, X_p, T_p, ~, succ] = mostLikelyGrade(q_path(:, i),...
-                    X_goal-X_free(:, i), length, steps, obstacle, robot);
+            if length < 0.5
+                steps = max(5, double(int32(100*length)));
+                time = double(int32(steps/5));
+                [~, X_p, ~, succ, q_iter, x_iter, t_iter] = ...
+                    newton_smooth(q_path(:, i), X_goal, steps, ...
+                    obstacle, robot, time);
             end
             % connect to c++ process, only one solution is enough
             connect = 0;
-            if succ && goalTest(X_p(:, steps+1), X_goal)
+            if succ && goalTest(X_p, X_goal)
                 connect = 1;
                 endPoint(rank_end) = i;
                 rank_end = rank_end + 1;
@@ -167,9 +172,9 @@ if 1 < rank_end
     [optimal_q, optimal_Xfree, optimal_T] = findPath(q_path, X_free, ...
         parent, cost, Time, nendPoint, K);
     if connect
-        optimal_q = [optimal_q q_p];
-        optimal_Xfree = [optimal_Xfree X_p];
-%         optimal_T = [optimal_T; T_p];
+        optimal_q = [optimal_q q_iter];
+        optimal_Xfree = [optimal_Xfree x_iter];
+        optimal_T = [optimal_T t_iter];
     end
     % smooth the path
     [output_q, output_Xfree, output_T] = smooth(optimal_q, ...
