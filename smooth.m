@@ -17,7 +17,7 @@ q_out(:, 1) = q_input(:, 1);
 x_out(:, 1) = x_input(:, 1);
 t_out(1) = t_input(1);
 
-delta_T = 3;
+delta_T = 1;
 j = 2;
 zero_norm = -0.001;
 % delete the path that needs time less than zero_norm

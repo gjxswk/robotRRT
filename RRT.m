@@ -39,7 +39,7 @@ m = robot.m;
 
 % initialize
 % K规划总数
-K = 2000; 
+K = 1000; 
 q_path = zeros(n, K);
 X_free = zeros(m, K);
 parent = zeros(1, K);
@@ -96,7 +96,7 @@ while i <= K && num_fail <= 2*K
        end
        % doing extend here, generate new tree point and added it to 
        % the original tree
-        [q_path, X_free, parent, cost, Time, success] = extendNP(q_path, ...
+        [q_path, X_free, parent, cost, Time, success] = extend(q_path, ...
             X_free, parent, cost, Time, X_rand, numTree+1, factor, ...
             obstacle, robot);
         COMPILE = 0;
@@ -108,7 +108,7 @@ while i <= K && num_fail <= 2*K
                 toolkit('array', q_path(:, i), 'the new point is: ');
                 toolkit('array', X_free(:, i), 'the new pointx is: ');
                 toolkit('array', X_rand(:), 'the rand point is: ');
-                sss = input('message');
+                toolkit('input');
             else
                 disp('extend not success');
             end
@@ -134,7 +134,7 @@ while i <= K && num_fail <= 2*K
             % if length is close enough, then get the answer and quit,
             % changing succ to 1, perform MLG to get the last answer
             succ = 0;
-            if length < 0.1
+            if length < 0.5
                 steps = double(int32(100*length));
                 [q_p, X_p, T_p, ~, succ] = mostLikelyGrade(q_path(:, i),...
                     X_goal-X_free(:, i), length, steps, obstacle, robot);
@@ -169,7 +169,7 @@ if 1 < rank_end
     if connect
         optimal_q = [optimal_q q_p];
         optimal_Xfree = [optimal_Xfree X_p];
-%         optimal_T = [optimal_T; T_p];
+        optimal_T = [optimal_T T_p];
     end
     % smooth the path
     [output_q, output_Xfree, output_T] = smooth(optimal_q, ...

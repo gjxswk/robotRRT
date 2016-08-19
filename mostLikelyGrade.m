@@ -21,7 +21,6 @@ function [q_path, X_path, Time, H, success] = mostLikelyGrade(q0, ...
 
 % global variables
 global COMPILE
-
 % 载入机械臂参数
 n = robot.n;
 m = robot.m;
@@ -45,21 +44,23 @@ X_s = zeros(m, 1);
 factor = zeros(1, n);
 zero_norm = (1e-3)^6;
 delta_L = L / double(steps);
+allow_error = 0.1; % distance between the final resolved point with the 
+% goal point which is allowed 
 success = 1;
 % band the minimum velocity
 v_min = 0.05;
 % normalize the euler velocity
-Euler_v = Euler_v / norm(Euler_v, 2);
+Euler_v = Euler_v / norm(Euler_v);
 i = 1;
 dq(:, 1) = zeros(n, 1);
 q_path(:, i) = q0;
+X_s(1:3) = Euler_v(1:3);
 while i <= steps
     % get jacobi matrix and relative useful matrix
     [jac, ~, ra, pa, ~, ~] = Jacobi(q_path(1:n, i), robot);
     % perform euler angle velocity
     X_path(1:6, i) = matrix2pose(ra(:, :, n+1), pa(:, n+1));
-    X_s(1:3) = X_path(1:3, i);
-    X_s(4:6) = eulerV2absV(X_path(4:6), Euler_v);
+    X_s(4:6) = eulerV2absV(X_path(4:6), Euler_v(4:6));
     % to do boundary & obstacle detect
     if ~(obstacleFree([X_path(1:3,i) pa(:, :)], obstacle)  ...
             && boundaryFree(q_path(:, i), q_max, q_min))
@@ -139,6 +140,14 @@ if success
             && boundaryFree(q_path(:, i), q_max, q_min))
         success = 0;
         return
+     else
+         X_init = X_path(:, 1);
+         X_goal = X_init + L*Euler_v;
+         bias = rrtDistance(X_goal, X_path(:, i));
+         if allow_error < bias
+             success = 0;
+             return
+         end
     end
     %求解目标函数H(x)
     sq = zeros(n,1);

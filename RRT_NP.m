@@ -87,13 +87,13 @@ else
 end
 while i <= K && num_fail <= 5*K
    % sample function, random point in free space
-   X_rand = sample(X_min, X_max); 
-%     X_rand = X_goal;
+%    X_rand = sample(X_min, X_max); 
+    X_rand = X_goal;
    if obstacleFree(X_rand, obstacle)
-%        if COMPILE
-%            toolkit('matrix', i, 'current rank i is: ');
-%            toolkit('matrix', num_fail, 'num_fail is: ');
-%        end
+       if COMPILE
+           toolkit('matrix', i, 'current rank i is: ');
+           toolkit('matrix', num_fail, 'num_fail is: ');
+       end
        % doing extend here, generate new tree point and added it to 
        % the original tree
         [q_path, X_free, parent, cost, Time, success] = extendNP(q_path, ...
