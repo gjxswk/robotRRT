@@ -85,15 +85,15 @@ if obstacleFree(P0, obstacle) && boundaryFree(X_free, X_max, X_min)...
 else
     i = K+1;
 end
-while i <= K && num_fail <= 3*K
+while i <= K && num_fail <= 5*K
    % sample function, random point in free space
    X_rand = sample(X_min, X_max); 
 %     X_rand = X_goal;
    if obstacleFree(X_rand, obstacle)
-       if COMPILE
-           toolkit('matrix', i, 'current rank i is: ');
-           toolkit('matrix', num_fail, 'num_fail is: ');
-       end
+%        if COMPILE
+%            toolkit('matrix', i, 'current rank i is: ');
+%            toolkit('matrix', num_fail, 'num_fail is: ');
+%        end
        % doing extend here, generate new tree point and added it to 
        % the original tree
         [q_path, X_free, parent, cost, Time, success] = extendNP(q_path, ...
@@ -131,18 +131,21 @@ while i <= K && num_fail <= 3*K
             % numTree change to i, means there are i points in the tree
             numTree = i;
             length = rrtDistance(X_goal, X_free(:, i));
-            if COMPILE
-                toolkit('matrix', length, 'current distance is: ');
-            end
+%             if COMPILE
+%                 toolkit('matrix', length, 'current distance is: ');
+%             end
             % if length is close enough, then get the answer and quit,
             % changing succ to 1, perform MLG to get the last answer
             succ = 0;
-            if length < 0.5
+            if length < 0.3
                 steps = max(5, double(int32(100*length)));
                 time = double(int32(steps/5));
                 [~, X_p, ~, succ, q_iter, x_iter, t_iter] = ...
                     newton_smooth(q_path(:, i), X_goal, steps, ...
                     obstacle, robot, time);
+                if succ
+                    t_iter = t_iter + Time(i);
+                end
             end
             % connect to c++ process, only one solution is enough
             connect = 0;

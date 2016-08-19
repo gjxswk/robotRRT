@@ -15,7 +15,7 @@ X_max = test.X_max;
 X_min = test.X_min;
 obstacle = test.obstacle;
 % test RRT process and produce the path from q0 to goal
-[q_path, x_path, t_path, succ] = RRT_NP(q0, X_max, X_min, rE_goal, ...
+[q_path, x_path, t_path, succ] = RRT(q0, X_max, X_min, rE_goal, ...
     RE_goal, obstacle);
 if ~succ
     if COMPILE
@@ -27,9 +27,6 @@ else
         toolkit('matrix', q_path, 'q_path is: ');
         toolkit('matrix', x_path, 'x_path is: ');
         toolkit('matrix', t_path, 't_path is: ');
-    end
-    if SHOW_DIAGRAM
-        plot3(t_path, q_path(1, :), x_path(1, :));
     end
 end
 res = 1;

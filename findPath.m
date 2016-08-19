@@ -40,5 +40,5 @@ while i ~= 0
 end
 q_out = flipud(q_out(:, 1:j-1)')';
 X_out = flipud(X_out(:, 1:j-1)')';
-T_out = flipud(T_out(1: j-1));
+T_out = flipud(T_out(1: j-1)')';
 end

@@ -2,10 +2,16 @@ function [q_iter, x_iter, t_iter, success] = smooth_path(q_in, q_dest, ...
     steps, obstacle, robot, time)
 % doing smooth work and avoid obstacle
 % input:
-
+% q_in|q_dest: the initial and destination joint angles
+% steps: the medium steps that will go between the path
+% obstacle: data of obstacle
+% robot: DH data of robot
+% time: the total time that will go
 % output:
+% q_iter|x_iter|t_iter: the joint angles|pose|time in each iteration cycle
+% success: 1 for success and 0 fail
 
-% leave out 'time' parameters
+% leave out 'time' parameters, that is, the default time is 1.0 second
 if nargin < 6
     time = 1.0;
 end
@@ -16,7 +22,7 @@ if time == 0
 end
 num = int32(steps);
 t = zeros(1, num);
-for i = 2:num
+for i = 1:num
     t(i) = double(i) / double(num);
 end
 t_iter = t*time;

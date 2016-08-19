@@ -17,9 +17,9 @@ q_out(:, 1) = q_input(:, 1);
 x_out(:, 1) = x_input(:, 1);
 t_out(1) = t_input(1);
 
-delta_T = 1;
+delta_T = 3;
 j = 2;
-zero_norm = 0.001;
+zero_norm = -0.001;
 % delete the path that needs time less than zero_norm
 for i = 2:steps
     if zero_norm < t_input(i) - delta_T*(j-1) 
